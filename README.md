@@ -1,28 +1,28 @@
 # Fofoqueiro – Agregador de Inteligência & Notícias
 
-Um agregador de inteligência focado em tecnologia e segurança que extrai, sintetiza e traduz conteúdos das seguintes fontes:
-- 🇧🇷 **TabNews** (Notícias e discussões relevantes da comunidade tech BR)
-- 🧡 **Hacker News** (Top stories traduzidas e resumidas)
-- 🤖 **Reddit** (Posts dos subreddits `r/linux`, `r/netsec`, `r/programming`, `r/technology` e novos subreddits adicionáveis)
-- 🛡️ **Linux Kernel CVEs** (Vulnerabilidades e boletins de segurança do Kernel Linux)
+Um agregador de inteligência focado em tecnologia e segurança que extrai e sintetiza conteúdos mantendo o idioma original (sem tradução), das seguintes fontes:
+- 🧡 **Hacker News** (Top stories resumidas objetivamente)
+- 🤖 **Reddit / Comunidade Tech** (Posts de subreddits configuráveis como `r/linux`, `r/netsec`, `r/programming`, `r/technology`)
+- 🛡️ **Linux Security & CVEs** (Boletins oficiais de segurança e vulnerabilidades de distribuidores e kernel: Canonical USN, Red Hat RHSA, Amazon Linux ALAS, Linux Kernel Releases e CISA Advisories)
 
-Toda a sumarização e tradução é feita via **9router** com prompts neutros e objetivos.
+Toda a sumarização é feita via **9router** com prompts neutros e objetivos.
 
 ---
 
 ## 🛠️ Arquitetura do Sistema
 
-O projeto é dividido em **dois processos independentes** utilizando **SQLite** como banco relacional unificado:
+O projeto é dividido em **dois processos independentes** utilizando **SQLite** (com modo WAL ativado) como banco de dados unificado:
 
 1. **`worker.py`** *(Background Process)*:
-   - Executa periodicamente a coleta de dados de todas as fontes.
+   - Executa periodicamente a coleta de dados de todas as fontes paralelamente via `ThreadPoolExecutor`.
+   - Garante execução atômica via `fcntl.flock` (evita concorrência).
    - Dedupica registros no SQLite.
-   - Envia itens pendentes para o **9router** gerar títulos traduzidos e resumos objetivos.
+   - Envia itens pendentes para o **9router** gerar resumos objetivos no idioma original.
    
 2. **`app.py`** *(Streamlit Interface)*:
-   - Interface web visual para navegação.
+   - Interface web visual responsiva com layout ultracompacto em grade (2 colunas) e preview direto de resumos.
    - Filtros por fonte, busca por palavras-chave e adição dinâmica de subreddits.
-   - Monitoramento das execuções do worker.
+   - Monitoramento lateral do histórico de execuções do worker.
 
 ---
 
@@ -34,17 +34,14 @@ cd /srv/user/AI/projetos/Fofoqueira
 pip install -r requirements.txt
 ```
 
-### 2. Iniciar o Background Worker (Agendamento & IA)
-Em um terminal separado:
+### 2. Iniciar via Script Automatizado (Tmux)
 ```bash
-python3 worker.py
+./start.sh
 ```
 
-### 3. Iniciar a Interface Streamlit
-Em outro terminal:
-```bash
-streamlit run app.py
-```
+Ou manualmente em terminais separados:
+- **Worker (Daemon Background)**: `python3 worker.py`
+- **Interface Web (Streamlit)**: `streamlit run app.py`
 
 ---
 
