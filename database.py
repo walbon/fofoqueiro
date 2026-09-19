@@ -19,6 +19,12 @@ def init_db(conn: sqlite3.Connection):
     """Cria as tabelas se ainda não existirem."""
     c = conn.cursor()
 
+    # Migration segura para tabelas existentes
+    try:
+        c.execute("ALTER TABLE news ADD COLUMN status TEXT NOT NULL DEFAULT 'active'")
+    except sqlite3.OperationalError:
+        pass  # Coluna já existe
+
     c.executescript("""
         CREATE TABLE IF NOT EXISTS news (
             id           TEXT PRIMARY KEY,
@@ -34,7 +40,8 @@ def init_db(conn: sqlite3.Connection):
             comment_count INTEGER DEFAULT 0,
             published_at TEXT,
             fetched_at   TEXT NOT NULL,
-            processed    INTEGER NOT NULL DEFAULT 0
+            processed    INTEGER NOT NULL DEFAULT 0,
+            status       TEXT NOT NULL DEFAULT 'active'
         );
 
         CREATE TABLE IF NOT EXISTS worker_runs (
@@ -99,9 +106,19 @@ def update_summary(conn: sqlite3.Connection, news_id: str, title_pt: str | None,
     conn.commit()
 
 
+def update_status(conn: sqlite3.Connection, news_id: str, status: str):
+    """Atualiza o estado de uma notícia (ex: 'active', 'archived', 'ignored')."""
+    conn.execute(
+        "UPDATE news SET status = ? WHERE id = ?",
+        (status, news_id),
+    )
+    conn.commit()
+
+
 def get_news(
     conn: sqlite3.Connection,
     source: str | None = None,
+    status: str | None = "active",
     limit: int = 100,
     offset: int = 0,
     search: str | None = None,
@@ -111,6 +128,9 @@ def get_news(
     if source:
         q += " AND source = ?"
         params.append(source)
+    if status:
+        q += " AND status = ?"
+        params.append(status)
     if search:
         q += " AND (title LIKE ? OR title_pt LIKE ? OR summary LIKE ?)"
         like = f"%{search}%"
