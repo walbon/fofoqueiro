@@ -208,15 +208,31 @@ class LinuxCVEAnnounceFetcher(BaseFetcher):
         self.max_months_back = max_months_back
         self.limit_per_month = limit_per_month
 
+    def _extract_tags_and_cve(self, title: str) -> tuple[list, list]:
+        cves = re.findall(r'CVE-\d{4}-\d+', title)
+        tags = []
+        # Pega o corpo depois de "CVE-XXXX-XXXX:"
+        m = re.match(r'CVE-\d{4}-\d+:\s*(.+)', title)
+        if m:
+            body = m.group(1)
+            segments = re.split(r'[:/]', body)[:4]
+            seen = set()
+            for seg in segments:
+                clean = seg.strip().lower()
+                if clean and clean not in seen:
+                    seen.add(clean)
+                    tags.append(clean)
+        return cves, tags
+
     def _parse_month_page(self, html: str) -> list[dict]:
         messages = []
         entries = re.findall(r'<a href="(\?l=[^"]+w=2)"[^>]*>([^<]{30,150})</a>', html)
         for href, title in entries:
-            cves = re.findall(r'CVE-\d{4}-\d+', title)
+            cves, tags = self._extract_tags_and_cve(title)
             if not cves:
                 continue
-            lowered = title.lower()
-            if not any(kw.lower() in lowered for kw in self.theme_keywords):
+            # compara tags extraídas vs keywords
+            if not any(kw.lower() in tags for kw in self.theme_keywords):
                 continue
             messages.append({
                 "id": f"cve-ann-{href.split('m=')[-1].split('&')[0]}",
