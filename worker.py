@@ -91,7 +91,7 @@ def run_fetchers():
 
     fetchers = [
         HNFetcher(config.HN_TOP_STORIES_URL, config.HN_ITEM_URL, config.HN_FETCH_LIMIT),
-        CVEFetcher(config.CVE_FEEDS),
+        CVEFetcher(config.CVE_FEEDS, theme_keywords=config.THEME_KEYWORDS),
         LWNFetcher(rss_url=config.LWN_RSS_URL, limit=30),
         LinuxCVEAnnounceFetcher(theme_keywords=config.THEME_KEYWORDS)
     ]

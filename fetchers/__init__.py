@@ -130,8 +130,16 @@ class RedditFetcher(BaseFetcher):
 
 class CVEFetcher(BaseFetcher):
     source_name = "cve"
-    def __init__(self, urls: list[str]):
+    def __init__(self, urls: list[str], theme_keywords: list | None = None):
         self.urls = urls
+        self.theme_keywords = theme_keywords or []
+
+    def _matches_theme(self, title: str, summary: str) -> bool:
+        """Retorna True se algum keyword aparecer no título ou resumo."""
+        if not self.theme_keywords:
+            return True
+        text = (title + " " + summary).lower()
+        return any(kw.lower() in text for kw in self.theme_keywords)
 
     def _fetch_url(self, url: str) -> list[dict]:
         cve_results = []
@@ -142,12 +150,16 @@ class CVEFetcher(BaseFetcher):
                 r.raise_for_status()
             feed = feedparser.parse(r.text)
             for entry in feed.entries[:15]:
+                title = entry.title
+                summary = entry.get("summary", "")
+                if not self._matches_theme(title, summary):
+                    continue
                 cve_results.append({
                     "id": f"cve_{entry.id if hasattr(entry, 'id') else entry.link}",
                     "source": self.source_name,
-                    "title": entry.title,
+                    "title": title,
                     "link": entry.link,
-                    "summary": entry.get("summary", ""),
+                    "summary": summary,
                     "published_at": datetime(*entry.published_parsed[:6]).isoformat() if hasattr(entry, "published_parsed") and entry.published_parsed else datetime.utcnow().isoformat()
                 })
         except Exception as e:
