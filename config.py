@@ -35,6 +35,19 @@ CVE_FEEDS = [
     "https://www.cisa.gov/cybersecurity-advisories/all.xml",      # CISA Advisories
 ]
 
+# ── LWN.net ───────────────────────────────────────────────────────────────
+LWN_RSS_URL = "https://lwn.net/headlines/rss"
+
+# ── Theme keywords para linux-cve-announce (filtros de relevância) ────────
+THEME_KEYWORDS = [
+    "drm", "gpu", "i3c", "cxl", "mdio", "vc4", "panthor",
+    "clk", "plat-dma", "pwm", "regulator", "gpio",
+    "usb", "ssusb", "xhci", "dwc3",
+    "net", "ipv6", "llc", "clustering",
+    "sched", "fair", "tick", "irq", "preempt",
+    "pci", "acpi", "firmware", "uefi",
+]
+
 # ── Scheduler ──────────────────────────────────────────────────────────
 WORKER_INTERVAL_MINUTES = 60  # a cada 1 hora
 

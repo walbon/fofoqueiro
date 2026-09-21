@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import config
 import database
 from ai_service import summarize
-from fetchers import HNFetcher, RedditFetcher, CVEFetcher
+from fetchers import HNFetcher, RedditFetcher, CVEFetcher, LWNFetcher, LinuxCVEAnnounceFetcher
 
 LOG_FILE = f"{config.PROJECT_ROOT}/fofoqueiro.log"
 LOCK_FILE = f"{config.PROJECT_ROOT}/worker.lock"
@@ -92,7 +92,9 @@ def run_fetchers():
     fetchers = [
         HNFetcher(config.HN_TOP_STORIES_URL, config.HN_ITEM_URL, config.HN_FETCH_LIMIT),
         RedditFetcher(config.get_all_subreddits()),
-        CVEFetcher(config.CVE_FEEDS)
+        CVEFetcher(config.CVE_FEEDS),
+        LWNFetcher(rss_url=config.LWN_RSS_URL, limit=30),
+        LinuxCVEAnnounceFetcher(theme_keywords=config.THEME_KEYWORDS)
     ]
 
     # Parallelize fetchers execution
