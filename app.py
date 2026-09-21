@@ -87,48 +87,17 @@ status_filter = st.sidebar.selectbox(
 
 source_filter = st.sidebar.selectbox(
     "Fonte de Notícias",
-    ["Todas", "hackernews", "reddit", "cve"],
+    ["Todas", "hackernews", "cve", "lwn", "linux-cve-announce"],
     format_func=lambda x: {
         "Todas": "🌐 Todas as Fontes",
         "hackernews": "🧡 Hacker News",
-        "reddit": "🤖 Reddit",
         "cve": "🛡️ Linux CVEs",
+        "lwn": "📖 LWN.net",
+        "linux-cve-announce": "🔒 Kernel CVEs",
     }.get(x, x),
 )
 
 search_term = st.sidebar.text_input("🔎 Buscar palavra-chave", "")
-
-st.sidebar.divider()
-st.sidebar.subheader("⚙️ Gerenciar Subreddits")
-
-current_subs = config.get_all_subreddits()
-user_subs = config.load_user_subreddits()
-
-st.sidebar.caption("Subreddits Ativos:")
-for sub in current_subs:
-    col_sub_name, col_sub_del = st.sidebar.columns([0.8, 0.2])
-    with col_sub_name:
-        is_default = sub in config.DEFAULT_SUBREDDITS
-        label = f"`r/{sub}`" + (" *(padrão)*" if is_default else "")
-        st.markdown(label)
-    with col_sub_del:
-        if not is_default:
-            if st.button("❌", key=f"del_sub_{sub}", help=f"Remover r/{sub}"):
-                if sub in user_subs:
-                    user_subs.remove(sub)
-                    config.save_user_subreddits(user_subs)
-                    st.sidebar.success(f"Removido: r/{sub}")
-                    st.rerun()
-
-new_sub = st.sidebar.text_input("Adicionar Subreddit", placeholder="ex: cybersecurity")
-if st.sidebar.button("➕ Adicionar Subreddit"):
-    if new_sub.strip():
-        clean_sub = new_sub.strip().replace("r/", "")
-        if clean_sub not in user_subs and clean_sub not in config.DEFAULT_SUBREDDITS:
-            user_subs.append(clean_sub)
-            config.save_user_subreddits(user_subs)
-            st.sidebar.success(f"Adicionado: r/{clean_sub}!")
-            st.rerun()
 
 st.sidebar.divider()
 

@@ -40,12 +40,7 @@ LWN_RSS_URL = "https://lwn.net/headlines/rss"
 
 # ── Theme keywords para linux-cve-announce (filtros de relevância) ────────
 THEME_KEYWORDS = [
-    "drm", "gpu", "i3c", "cxl", "mdio", "vc4", "panthor",
-    "clk", "plat-dma", "pwm", "regulator", "gpio",
-    "usb", "ssusb", "xhci", "dwc3",
-    "net", "ipv6", "llc", "clustering",
-    "sched", "fair", "tick", "irq", "preempt",
-    "pci", "acpi", "firmware", "uefi",
+    "gpu","kvm", "nvme",
 ]
 
 # ── Scheduler ──────────────────────────────────────────────────────────
