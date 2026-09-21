@@ -3,10 +3,33 @@ Fofoqueiro - Extratores de Conteúdo (Paralelizados)
 """
 import httpx
 import feedparser
+from bs4 import BeautifulSoup
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Fofoqueiro/1.0"
+
+def extract_body_snippet(url: str, max_chars: int = 250) -> str:
+    """Acessa a URL da notícia e extrai o corpo de texto limpo (até max_chars)."""
+    if not url or not url.startswith("http") or "ycombinator.com" in url or "reddit.com" in url:
+        return ""
+    try:
+        headers = {"User-Agent": USER_AGENT}
+        with httpx.Client(timeout=5.0, follow_redirects=True, headers=headers) as client:
+            resp = client.get(url)
+            if resp.status_code != 200:
+                return ""
+            soup = BeautifulSoup(resp.text, "html.parser")
+            for tag in soup(["script", "style", "nav", "header", "footer", "aside", "noscript", "form"]):
+                tag.decompose()
+            
+            paragraphs = [p.get_text(strip=True) for p in soup.find_all("p") if len(p.get_text(strip=True)) > 30]
+            full_text = " ".join(paragraphs)
+            if full_text:
+                return full_text[:max_chars].strip() + ("..." if len(full_text) > max_chars else "")
+    except Exception:
+        pass
+    return ""
 
 class BaseFetcher:
     source_name = "unknown"
@@ -29,11 +52,16 @@ class HNFetcher(BaseFetcher):
                     link = data.get("url") or f"https://news.ycombinator.com/item?id={item_id}"
                     ts = data.get("time", 0)
                     pub_at = datetime.utcfromtimestamp(ts).isoformat() if ts else datetime.utcnow().isoformat()
+                    
+                    # Tenta extrair trecho diretamente da página externa se for link válido
+                    snippet = extract_body_snippet(link, max_chars=250) if data.get("url") else data.get("text", "")
+
                     return {
                         "id": f"hn_{item_id}",
                         "source": self.source_name,
                         "title": data.get("title", ""),
                         "link": link,
+                        "summary": snippet,
                         "tabcoins": data.get("score", 0),
                         "comment_count": data.get("descendants", 0),
                         "published_at": pub_at

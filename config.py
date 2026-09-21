@@ -25,10 +25,6 @@ HN_TOP_STORIES_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
 HN_ITEM_URL        = "https://hacker-news.firebaseio.com/v0/item/{}.json"
 HN_FETCH_LIMIT     = 30  # quantos top stories buscar por ciclo
 
-# ── TabNews ────────────────────────────────────────────────────────────
-TABNEWS_API_URL = "https://www.tabnews.com.br/api/v1/contents"
-TABNEWS_PARAMS  = {"strategy": "relevant", "per_page": "30"}
-
 # ── Linux Kernel CVE / Security Advisories ─────────────────────────────
 # Feeds RSS oficiais de distribuidores e kernel
 CVE_FEEDS = [

@@ -19,9 +19,14 @@ def init_db(conn: sqlite3.Connection):
     """Cria as tabelas se ainda não existirem."""
     c = conn.cursor()
 
-    # Migration segura para tabelas existentes
+    # Migrations seguras para tabelas existentes
     try:
         c.execute("ALTER TABLE news ADD COLUMN status TEXT NOT NULL DEFAULT 'active'")
+    except sqlite3.OperationalError:
+        pass  # Coluna já existe
+
+    try:
+        c.execute("ALTER TABLE news ADD COLUMN is_starred INTEGER NOT NULL DEFAULT 0")
     except sqlite3.OperationalError:
         pass  # Coluna já existe
 
@@ -41,7 +46,8 @@ def init_db(conn: sqlite3.Connection):
             published_at TEXT,
             fetched_at   TEXT NOT NULL,
             processed    INTEGER NOT NULL DEFAULT 0,
-            status       TEXT NOT NULL DEFAULT 'active'
+            status       TEXT NOT NULL DEFAULT 'active',
+            is_starred   INTEGER NOT NULL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS worker_runs (
@@ -115,10 +121,20 @@ def update_status(conn: sqlite3.Connection, news_id: str, status: str):
     conn.commit()
 
 
+def toggle_starred(conn: sqlite3.Connection, news_id: str):
+    """Alterna o status de favorito (is_starred) de uma notícia."""
+    conn.execute(
+        "UPDATE news SET is_starred = CASE WHEN is_starred = 1 THEN 0 ELSE 1 END WHERE id = ?",
+        (news_id,),
+    )
+    conn.commit()
+
+
 def get_news(
     conn: sqlite3.Connection,
     source: str | None = None,
     status: str | None = "active",
+    only_starred: bool = False,
     limit: int = 100,
     offset: int = 0,
     search: str | None = None,
@@ -131,6 +147,8 @@ def get_news(
     if status:
         q += " AND status = ?"
         params.append(status)
+    if only_starred:
+        q += " AND is_starred = 1"
     if search:
         q += " AND (title LIKE ? OR title_pt LIKE ? OR summary LIKE ?)"
         like = f"%{search}%"

@@ -72,6 +72,8 @@ with col_head2:
 # ── Sidebar ─────────────────────────────────────────────────────────────
 st.sidebar.header("🔍 Filtros & Estado")
 
+only_starred = st.sidebar.checkbox("⭐ Apenas Favoritos", value=False)
+
 status_filter = st.sidebar.selectbox(
     "Visualizar Notícias",
     ["active", "archived", "ignored", "all"],
@@ -147,6 +149,7 @@ news_list = database.get_news(
     conn, 
     source=selected_source, 
     status=selected_status,
+    only_starred=only_starred,
     search=search_term if search_term else None
 )
 
@@ -190,9 +193,17 @@ else:
                     unsafe_allow_html=True
                 )
 
-                # Botões de Ação v2 (Arquivar e Não Interessa)
-                btn_col1, btn_col2, _ = st.columns([0.35, 0.45, 0.2])
+                # Botões de Ação v2 (Favoritar, Arquivar e Não Interessa)
+                btn_star, btn_col1, btn_col2 = st.columns([0.2, 0.35, 0.45])
                 item_status = item["status"] if "status" in item.keys() else "active"
+                is_starred = bool(item["is_starred"]) if "is_starred" in item.keys() and item["is_starred"] else False
+
+                with btn_star:
+                    star_label = "⭐" if is_starred else "☆"
+                    star_help = "Remover dos Favoritos" if is_starred else "Marcar como Favorito"
+                    if st.button(star_label, key=f"star_{item['id']}", help=star_help, use_container_width=True):
+                        database.toggle_starred(conn, item["id"])
+                        st.rerun()
 
                 with btn_col1:
                     if item_status != "archived":
