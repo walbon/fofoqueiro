@@ -23,7 +23,7 @@ DEFAULT_SUBREDDITS = ["linux", "netsec", "programming", "technology"]
 # ── Hacker News ────────────────────────────────────────────────────────
 HN_TOP_STORIES_URL = "https://hacker-news.firebaseio.com/v0/topstories.json"
 HN_ITEM_URL        = "https://hacker-news.firebaseio.com/v0/item/{}.json"
-HN_FETCH_LIMIT     = 30  # quantos top stories buscar por ciclo
+HN_FETCH_LIMIT     = 50  # quantos top stories buscar por ciclo
 
 # ── Linux Kernel CVE / Security Advisories ─────────────────────────────
 # Feeds RSS oficiais de distribuidores e kernel
@@ -46,7 +46,7 @@ THEME_KEYWORDS = [
 WORKER_INTERVAL_MINUTES = 1440  # a cada 1 hora
 
 # ── Streamlit ──────────────────────────────────────────────────────────
-STREAMLIT_PAGE_TITLE = "Fofoqueiro – Agregador de Inteligência & Notícias"
+STREAMLIT_PAGE_TITLE = "Fofoqueiro – Agregador de Notícias Devlicínhas"
 STREAMLIT_PAGE_ICON  = "📰"
 
 # ── Helpers ────────────────────────────────────────────────────────────
