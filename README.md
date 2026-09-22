@@ -136,17 +136,5 @@ beautifulsoup4>=4.12.0
 
 ---
 
-## 🛠️ Histórico de Commits Recentes
-
-| Hash | Assunto |
-|---|---|
-| `e56cf3e` | chore: simplify CVE feeds list, add kubernets keyword to theme filter |
-| `3479796` | fix: remove ycombinator.com from extract_body_snippet blacklist |
-| `5de4fb6` | refactor: remove NVD SPA support (SPA Angular, static fetch impossible) |
-| `52462b0` | feat: extract_body_snippet supports pre tags, marc.info Description cleanup |
-| `f613c49` | feat: add BeautifulSoup fallback (200 words) when IA offline |
-| `a6ffa50` | feat: rename NINEROUTER→IA, add offline mode warning |
-| `36bb7e7` | Opcoes mais viaveis para busca de CVEs |
-
----
+*Este README reflete o estado atual do projeto. Atualize conforme novas iterações.*
 
