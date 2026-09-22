@@ -42,7 +42,7 @@ echo "📦 Instalando dependências..."
 if [ ! -f "$PROJECT_DIR/.env" ]; then
     echo "⚠️  .env não encontrado. Copiando .env.example..."
     cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
-    echo "⚠️  Edite $PROJECT_DIR/.env e preencha NINEROUTER_API_KEY."
+    echo "⚠️  Edite $PROJECT_DIR/.env e preencha IA_API_KEY."
 fi
 
 ###############################################################################

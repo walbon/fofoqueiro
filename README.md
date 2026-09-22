@@ -7,7 +7,7 @@ Um agregador de inteligência focado em tecnologia e segurança que extrai e sin
 - 📖 **LWN.net** — Artigos do Linux Weekly News via RSS
 - 🔒 **linux-cve-announce** — CVEs do kernel Linux extraídas do mailing list (Openwall/MARC), com **filtro por temas** extraídos do título (ex: KVM, arm64, nv)
 
-Toda a sumarização é feita via **9router** com prompts neutros e objetivos.
+Toda a sumarização é feita via **IA** usando padrão **OpenAI-compatible** (`/chat/completions`) com prompts neutros e objetivos. Sem chave (`IA_API_KEY` vazio), o worker coleta normalmente em **modo offline** e marca resumos como indisponíveis.
 
 ---
 
@@ -65,9 +65,9 @@ As configurações estão em `config.py` e `.env`:
 
 | Variável | Descrição | Default |
 |---|---|---|
-| `NINEROUTER_BASE_URL` | Endpoint da API de sumarização | `http://127.0.0.1:20128/v1` |
-| `NINEROUTER_API_KEY` | Chave de autenticação 9router | — |
-| `NINEROUTER_MODEL` | Modelo LLM utilizado | `free` |
+| `IA_BASE_URL` | Endpoint da API de sumarização (OpenAI-compatible: 9router, Ollama, LM Studio, vLLM) | `http://127.0.0.1:20128/v1` |
+| `IA_API_KEY` | Chave de autenticação (deixar vazio = modo offline, armazena sem resumo IA) | — |
+| `IA_MODEL` | Modelo LLM utilizado | `free` |
 | `THEME_KEYWORDS` | Palavras-chave para filtrar CVEs relevantes (ambas fontes: linux-cve-announce e feeds CVE) | `["gpu","kvm","nvme"]` |
 | `WORKER_INTERVAL_MINUTES` | Intervalo entre coletas (em minutos) | `60` |
 | `DEFAULT_SUBREDDITS` | Subreddits monitorados (agora sem Reddit ativo) | `linux, netsec, programming, technology` |
@@ -104,7 +104,7 @@ Fofoqueira/
 │   ├── LWNFetcher         # LWN.net RSS
 │   └── LinuxCVEAnnounceFetcher  # Mailing list linux-cve-announce (com filtro de tema)
 ├── fofoqueiro.db          # Banco SQLite (WAL mode)
-├── .env                   # Credenciais (NINEROUTER_API_KEY)
+├── .env                   # Credenciais (IA_API_KEY)
 ├── install_daemon.sh      # Instalador completo (venv, service, firewall)
 ├── start.sh               # Iniciar worker + web via tmux
 ├── stop.sh                # Parar tudo (tmux, systemd, processos)

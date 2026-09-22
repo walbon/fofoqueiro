@@ -1,11 +1,24 @@
 """
-Fofoqueiro – Cliente 9router via HTTP (OpenAI-compatible)
+Fofoqueiro – Cliente IA via HTTP (OpenAI-compatible)
+
+Endpoint e modelo são lidos de config.py (IA_BASE_URL, IA_API_KEY, IA_MODEL).
+Se IA_API_KEY não for definida, o cliente inicia em modo offline:
+  summarize() retorna aviso claro e não tenta conectar.
 """
 import httpx, json, re, time
 from config import NINEROUTER_BASE_URL, NINEROUTER_API_KEY, NINEROUTER_MODEL
 
+IA_BASE_URL = NINEROUTER_BASE_URL
+IA_API_KEY = NINEROUTER_API_KEY
+IA_MODEL = NINEROUTER_MODEL
+
+AI_AVAILABLE = bool(IA_API_KEY and IA_API_KEY.strip())
+
+if not AI_AVAILABLE:
+    print("[AIService] ⚠️  IA_API_KEY não configurada – modo offline. Notícias serão armazenadas sem resumo IA.")
+
 _headers = {
-    "Authorization": f"Bearer {NINEROUTER_API_KEY}",
+    "Authorization": f"Bearer {IA_API_KEY}",
     "Content-Type": "application/json",
 }
 
@@ -15,12 +28,12 @@ TIMEOUT_SECONDS = 120.0  # Timeout expandido para 120 segundos
 def _call_llm(messages: list[dict], temperature: float = 0.2) -> str:
     """Chama 9router com até 5 tentativas (retries) e timeout estendido de 120s."""
     payload = {
-        "model": NINEROUTER_MODEL,
+        "model": IA_MODEL,
         "messages": messages,
         "temperature": temperature,
         "stream": False,          # pede resposta não-streaming
     }
-    url = f"{NINEROUTER_BASE_URL.rstrip('/')}/chat/completions"
+    url = f"{IA_BASE_URL.rstrip('/')}/chat/completions"
 
     last_exception = None
 
@@ -55,19 +68,23 @@ def _call_llm(messages: list[dict], temperature: float = 0.2) -> str:
                 if full_content.strip():
                     return full_content.strip()
 
-                raise ValueError("Resposta vazia da API do 9router")
+                raise ValueError("Resposta vazia da API de IA")
 
         except Exception as e:
             last_exception = e
             print(f"[AIService] Tentativa {attempt}/{MAX_RETRIES} falhou ({e})... Retentando em {attempt * 2}s")
             if attempt < MAX_RETRIES:
-                time.sleep(attempt * 2)  # Backoff exponencial simples (2s, 4s, 6s, 8s...)
+                time.sleep(attempt * 2)
 
     # Se todas as 5 tentativas falharem, relança a última exceção
     raise last_exception
 
 def summarize(title: str, body: str = "", source: str = "") -> tuple[str, str]:
-    """Gera resumo objetivo e conciso no mesmo idioma do conteúdo original."""
+    """Gera resumo objetivo e conciso no mesmo idioma do conteúdo original.
+    Se IA_BASE_URL/IA_API_KEY não estiverem configurados, retorna aviso claro
+    e não tenta conectar (modo offline)."""
+    if not AI_AVAILABLE:
+        return title, "⚠️ IA indisponível: IA_API_KEY não configurada. Conteúdo original: " + (body[:180] + "..." if body else "sem conteúdo.")
     
     prompt = f"""You are an objective and neutral technology news summarizer.
 Extract the essence without opinions or sensationalist terms. Keep technical accuracy.
@@ -98,5 +115,5 @@ Respond STRICTLY in valid JSON:
         return parsed.get("title", title), parsed.get("summary", "Sem resumo gerado.")
 
     except Exception as err:
-        print(f"[AIService] Erro após {MAX_RETRIES} tentativas no 9router: {err}")
+        print(f"[AIService] Erro após {MAX_RETRIES} tentativas de síntese IA: {err}")
         return title, (body[:250] + "...") if body else "Sem resumo disponível."

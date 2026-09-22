@@ -13,9 +13,9 @@ DB_PATH = os.path.join(PROJECT_ROOT, "fofoqueiro.db")
 USER_FEEDS_PATH = os.path.join(PROJECT_ROOT, "user_feeds.json")
 
 # ── 9router (OpenAI-compatible) ────────────────────────────────────────
-NINEROUTER_BASE_URL = os.getenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1")
-NINEROUTER_API_KEY  = os.getenv("NINEROUTER_API_KEY", "")
-NINEROUTER_MODEL    = os.getenv("NINEROUTER_MODEL", "free")
+NINEROUTER_BASE_URL = os.getenv("IA_BASE_URL", os.getenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1"))
+NINEROUTER_API_KEY  = os.getenv("IA_API_KEY", os.getenv("NINEROUTER_API_KEY", ""))
+NINEROUTER_MODEL    = os.getenv("IA_MODEL", os.getenv("NINEROUTER_MODEL", "free"))
 
 # ── Default subreddits (the user can add more via UI / user_feeds.json) ──
 DEFAULT_SUBREDDITS = ["linux", "netsec", "programming", "technology"]
