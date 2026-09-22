@@ -29,9 +29,8 @@ HN_FETCH_LIMIT     = 30  # quantos top stories buscar por ciclo
 # Feeds RSS oficiais de distribuidores e kernel
 CVE_FEEDS = [
     "https://ubuntu.com/security/notices/rss.xml",                # Canonical (Ubuntu Security Notices - USN)
-    "https://access.redhat.com/security/data/metrics/rhsa.rss",   # Red Hat (RHSA)
+  # "https://access.redhat.com/security/data/metrics/rhsa.rss",   # Red Hat (RHSA)
     "https://alas.aws.amazon.com/AL2023/alas.rss",                # Amazon Linux 2023 (ALAS)
-    "https://www.kernel.org/feeds/kdist.xml",                     # Linux Kernel Releases
     "https://www.cisa.gov/cybersecurity-advisories/all.xml",      # CISA Advisories
 ]
 
@@ -40,7 +39,7 @@ LWN_RSS_URL = "https://lwn.net/headlines/rss"
 
 # ── Theme keywords para linux-cve-announce (filtros de relevância) ────────
 THEME_KEYWORDS = [
-    "gpu","kvm", "nvme","ubuntu", "canonical", "qemu", "openstack",
+    "gpu","kvm", "nvme","ubuntu", "canonical", "qemu", "openstack", "kubernetes",
 ]
 
 # ── Scheduler ──────────────────────────────────────────────────────────
