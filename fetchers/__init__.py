@@ -10,8 +10,11 @@ import re
 
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Fofoqueiro/1.0"
 
-def extract_body_snippet(url: str, max_chars: int = 250) -> str:
-    """Acessa a URL da notícia e extrai o corpo de texto limpo (até max_chars)."""
+def extract_body_snippet(url: str, max_words: int = 200, max_chars: int | None = None) -> str:
+    """Acessa a URL da notícia e extrai o corpo de texto limpo (até max_words).
+
+    Usa max_words por padrão (200). Opcionalmente limita por max_chars
+    (mantido por compatibilidade com chamadas antigas)."""
     if not url or not url.startswith("http") or "ycombinator.com" in url or "reddit.com" in url:
         return ""
     try:
@@ -23,11 +26,17 @@ def extract_body_snippet(url: str, max_chars: int = 250) -> str:
             soup = BeautifulSoup(resp.text, "html.parser")
             for tag in soup(["script", "style", "nav", "header", "footer", "aside", "noscript", "form"]):
                 tag.decompose()
-            
+
             paragraphs = [p.get_text(strip=True) for p in soup.find_all("p") if len(p.get_text(strip=True)) > 30]
             full_text = " ".join(paragraphs)
-            if full_text:
-                return full_text[:max_chars].strip() + ("..." if len(full_text) > max_chars else "")
+            if not full_text:
+                return ""
+            words = full_text.split()
+            if len(words) > max_words:
+                full_text = " ".join(words[:max_words]) + "..."
+            if max_chars is not None and len(full_text) > max_chars:
+                full_text = full_text[:max_chars].strip() + "..."
+            return full_text
     except Exception:
         pass
     return ""

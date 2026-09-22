@@ -61,7 +61,7 @@ def process_pending_summaries():
             continue
             
         log(f"  [AI] Sintetizando: {item['title'][:60]}... ({item['source']})")
-        title_clean, summary = summarize(item["title"], item["summary"] or "", item["source"])
+        title_clean, summary = summarize(item["title"], item["summary"] or "", item["source"], item.get("link", ""))
         database.update_summary(conn, item["id"], title_clean, summary)
         processed_count += 1
         time.sleep(0.5) # Rate limit suave

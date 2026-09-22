@@ -7,6 +7,7 @@ Se IA_API_KEY não for definida, o cliente inicia em modo offline:
 """
 import httpx, json, re, time
 from config import NINEROUTER_BASE_URL, NINEROUTER_API_KEY, NINEROUTER_MODEL
+from fetchers import extract_body_snippet
 
 IA_BASE_URL = NINEROUTER_BASE_URL
 IA_API_KEY = NINEROUTER_API_KEY
@@ -79,12 +80,16 @@ def _call_llm(messages: list[dict], temperature: float = 0.2) -> str:
     # Se todas as 5 tentativas falharem, relança a última exceção
     raise last_exception
 
-def summarize(title: str, body: str = "", source: str = "") -> tuple[str, str]:
+def summarize(title: str, body: str = "", source: str = "", url: str = "") -> tuple[str, str]:
     """Gera resumo objetivo e conciso no mesmo idioma do conteúdo original.
+
     Se IA_BASE_URL/IA_API_KEY não estiverem configurados, retorna aviso claro
-    e não tenta conectar (modo offline)."""
+    e não tenta conectar (modo offline).
+    Fallback em caso de falha: tenta extrair corpo da URL via BeautifulSoup
+    (primeiras 200 palavras)."""
     if not AI_AVAILABLE:
-        return title, "⚠️ IA indisponível: IA_API_KEY não configurada. Conteúdo original: " + (body[:180] + "..." if body else "sem conteúdo.")
+        snippet = extract_body_snippet(url) if url else ""
+        return title, snippet or "⚠️ IA indisponível: IA_API_KEY não configurada."
     
     prompt = f"""You are an objective and neutral technology news summarizer.
 Extract the essence without opinions or sensationalist terms. Keep technical accuracy.
@@ -116,4 +121,6 @@ Respond STRICTLY in valid JSON:
 
     except Exception as err:
         print(f"[AIService] Erro após {MAX_RETRIES} tentativas de síntese IA: {err}")
-        return title, (body[:250] + "...") if body else "Sem resumo disponível."
+        # Fallback: extrai corpo da URL via BeautifulSoup (~200 palavras)
+        snippet = extract_body_snippet(url) if url else body[:400]
+        return title, snippet or "Sem resumo disponível."
