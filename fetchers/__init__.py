@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import re
+import config
 
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Fofoqueiro/1.0"
 
@@ -234,6 +235,56 @@ class LWNFetcher(BaseFetcher):
                 })
         except Exception as e:
             print(f"[Fetchers] Erro LWN: {e}")
+        return results
+
+#
+# --- Ubuntu LWN Alerts fetcher ---
+#
+
+class UbuntuLWNFetcher(BaseFetcher):
+    source_name = "ubuntu"
+    def __init__(self, url: str = "https://lwn.net/Alerts/Ubuntu/", limit: int = 30):
+        self.url = url
+        self.limit = limit
+
+    def fetch(self) -> list[dict]:
+        results = []
+        try:
+            headers = {"User-Agent": USER_AGENT}
+            with httpx.Client(timeout=15.0, headers=headers) as client:
+                r = client.get(self.url)
+                r.raise_for_status()
+            # Parse each <tr> in the alerts table
+            rows = re.findall(r"<tr[^>]*>(.*?)</tr>", r.text, re.DOTALL)
+            for row in rows[:self.limit]:
+                m = re.search(r"href=\"https://lwn\.net/Articles/(\d+)/?\"", row)
+                if not m:
+                    continue
+                lwn_id = m.group(1)
+                article_id = f"ubuntu_{lwn_id}"
+                # Package name: parse all <td> cells, second cell holds the package
+                cells = re.findall(r"<td[^>]*>(.*?)</td>", row, re.DOTALL)
+                clean = [re.sub(r"<[^>]+>", "", c).strip() for c in cells]
+                # clean = [USN-ID, package, date]
+                if len(clean) < 3:
+                    continue
+                pkg_name = clean[1]
+                date = clean[2] if re.match(r"\d{4}-\d{2}-\d{2}", clean[2]) else datetime.utcnow().isoformat()
+                # Theme keyword filter
+                if config.THEME_KEYWORDS:
+                    txt = pkg_name.lower()
+                    if not any(kw.lower() in txt for kw in config.THEME_KEYWORDS):
+                        continue
+                results.append({
+                    "id": article_id,
+                    "source": self.source_name,
+                    "title": pkg_name or "Ubuntu security alert",
+                    "link": f"https://lwn.net/Articles/{lwn_id}",
+                    "summary": f"Ubuntu security alert ({pkg_name})",
+                    "published_at": date,
+                })
+        except Exception as e:
+            print(f"[Fetchers] Erro Ubuntu LWN: {e}")
         return results
 
 #

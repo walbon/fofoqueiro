@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import config
 import database
 from ai_service import summarize
-from fetchers import HNFetcher, CVEFetcher, LWNFetcher, LinuxCVEAnnounceFetcher
+from fetchers import HNFetcher, CVEFetcher, LWNFetcher, LinuxCVEAnnounceFetcher, UbuntuLWNFetcher
 
 LOG_FILE = f"{config.PROJECT_ROOT}/fofoqueiro.log"
 LOCK_FILE = f"{config.PROJECT_ROOT}/worker.lock"
@@ -93,7 +93,8 @@ def run_fetchers():
         HNFetcher(config.HN_TOP_STORIES_URL, config.HN_ITEM_URL, config.HN_FETCH_LIMIT),
         CVEFetcher(config.CVE_FEEDS, theme_keywords=config.THEME_KEYWORDS),
         LWNFetcher(rss_url=config.LWN_RSS_URL, limit=30),
-        LinuxCVEAnnounceFetcher(theme_keywords=config.THEME_KEYWORDS)
+        LinuxCVEAnnounceFetcher(theme_keywords=config.THEME_KEYWORDS),
+        UbuntuLWNFetcher(limit=30)
     ]
 
     # Parallelize fetchers execution
