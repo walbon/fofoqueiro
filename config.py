@@ -40,7 +40,7 @@ LWN_RSS_URL = "https://lwn.net/headlines/rss"
 
 # ── Theme keywords para linux-cve-announce (filtros de relevância) ────────
 THEME_KEYWORDS = [
-    "gpu","kvm", "nvme",
+    "gpu","kvm", "nvme","ubuntu", "canonical", "qemu", "openstack",
 ]
 
 # ── Scheduler ──────────────────────────────────────────────────────────
