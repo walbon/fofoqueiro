@@ -17,7 +17,7 @@ O projeto é dividido em **dois processos** utilizando **SQLite** (modo WAL) com
 
 | Componente | Descrição |
 |---|---|
-| `worker.py` *(Background Process)* | Executa periodicamente a coleta de dados de todas as fontes paralelamente via `ThreadPoolExecutor`. Garante execução atômica via `fcntl.flock` (evita concorrência). Dedupica registros no SQLite. Envia itens pendentes para o **9router** gerar resumos objetivos no idioma original. |
+| `worker.py` *(Background Process)* | Executa periodicamente a coleta de dados de todas as fontes paralelamente via `ThreadPoolExecutor`. Garante execução atômica via `fcntl.flock` (evita concorrência). Dedupica registros no SQLite. Envia itens pendentes para o **IA** (padrão OpenAI-compatible: 9router, Ollama, LM Studio, etc.) gerar resumos objetivos no idioma original. |
 | `app.py` *(Streamlit Interface)* | Interface web visual responsiva com layout ultracompacto em grade (2 colunas) e preview direto de resumos. Filtros por fonte, busca por palavras-chave e adição dinâmica de subreddits. Monitoramento lateral do histórico de execuções do worker. |
 
 ---
@@ -97,12 +97,12 @@ Fofoqueira/
 ├── worker.py              # Daemon de coleta (background)
 ├── config.py              # Configurações centrais
 ├── database.py            # SQLite: init, queries, toggle_starred
-├── ai_service.py          # Sumarização via 9router
+├── ai_service.py          # Cliente IA via HTTP (OpenAI-compatible, com fallback BeautifulSoup)
 ├── fetchers/
 │   ├── HNFetcher          # Hacker News (API Firebase)
 │   ├── CVEFetcher         # RSS feeds de segurança (com filtro de tema)
 │   ├── LWNFetcher         # LWN.net RSS
-│   └── LinuxCVEAnnounceFetcher  # Mailing list linux-cve-announce (com filtro de tema)
+│   └── LinuxCVEAnnounceFetcher  # Mailing list linux-cve-announce (com filtro de tema, extração via <pre>)
 ├── fofoqueiro.db          # Banco SQLite (WAL mode)
 ├── .env                   # Credenciais (IA_API_KEY)
 ├── install_daemon.sh      # Instalador completo (venv, service, firewall)
@@ -140,15 +140,13 @@ beautifulsoup4>=4.12.0
 
 | Hash | Assunto |
 |---|---|
-| `7d54082` | feat: add theme keyword filtering to CVEFetcher (title+summary) |
-| `5a4e849` | feat: simplify tag extraction in linux-cve fetcher, remove rigid verb regex |
-| `f6b6eb0` | docs: update README with LWN, linux-cve-announce, scripts, and architecture |
-| `41464b0` | feat: remove Reddit source, add LWN and linux-cve-announce to sidebar sources |
-| `f00920d` | feat: add LWN.net and linux-cve-announce fetchers with theme filtering |
-| `08ed526` | feat: suporte a arquivamento, filtro 'nao interessa' e remocao de subreddits (v2) |
-| `6617550` | feat: add daemon installer with path auto-detection, stop script, dynamic start.sh |
-| `5cba9ef` | feat: implement favorite functionality (star button, is_starred column, toggle_starred function, config updates) |
-| `08ed526` | ... |
+| `e56cf3e` | chore: simplify CVE feeds list, add kubernets keyword to theme filter |
+| `3479796` | fix: remove ycombinator.com from extract_body_snippet blacklist |
+| `5de4fb6` | refactor: remove NVD SPA support (SPA Angular, static fetch impossible) |
+| `52462b0` | feat: extract_body_snippet supports pre tags, marc.info Description cleanup |
+| `f613c49` | feat: add BeautifulSoup fallback (200 words) when IA offline |
+| `a6ffa50` | feat: rename NINEROUTER→IA, add offline mode warning |
+| `36bb7e7` | Opcoes mais viaveis para busca de CVEs |
 
 ---
 
