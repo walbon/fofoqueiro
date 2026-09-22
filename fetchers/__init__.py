@@ -14,7 +14,7 @@ def extract_body_snippet(url: str, max_words: int = 200, max_chars: int | None =
     """Acessa URL e extrai corpo de texto limpo (até max_words).
 
     Suporta:\n      marc.info/linux-cve-announce: <pre> com limpeza de cabeçalho\n      Qualquer site HTML estático: <p>, <div>, <pre>, <blockquote> > 30 chars"""
-    if not url or not url.startswith("http") or "nvd.nist.gov" in url or "ycombinator.com" in url or "reddit.com" in url:
+    if not url or not url.startswith("http") or "nvd.nist.gov" in url or "reddit.com" in url:
         return ""
     try:
         headers = {"User-Agent": USER_AGENT}
