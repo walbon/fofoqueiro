@@ -1,0 +1,58 @@
+name: Lint
+
+permissions:
+  contents: read
+
+on:
+  push:
+    paths:
+      - '**.sh'
+      - '**.py'
+  pull_request:
+    paths:
+      - '**.sh'
+      - '**.py'
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Check shell scripts syntax (bash -n)
+        run: |
+          for f in install_daemon.sh start.sh stop.sh uninstall_daemon.sh; do
+            [ -f "$f" ] && bash -n "$f" && echo "OK: $f"
+          done
+      - name: Run shellcheck
+        run: |
+          files=$(ls install_daemon.sh start.sh stop.sh uninstall_daemon.sh 2>/dev/null || true)
+          if [ -n "$files" ]; then shellcheck -S warning $files; fi
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install linters
+        run: python -m pip install --upgrade ruff
+      - name: Check Python syntax (py_compile)
+        run: |
+          python -m py_compile app.py worker.py config.py database.py ai_service.py fetchers/__init__.py
+          echo "OK: all Python files compile"
+      - name: Run ruff (syntax + style)
+        run: ruff check app.py worker.py config.py database.py ai_service.py fetchers/__init__.py || true
+
+  yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate YAML workflows
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .github/workflows/
+          config_file: .github/workflows/.yamllint.yml
