@@ -11,10 +11,10 @@ import re
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Fofoqueiro/1.0"
 
 def extract_body_snippet(url: str, max_words: int = 200, max_chars: int | None = None) -> str:
-    """Acessa a URL e extrai o corpo de texto limpo (até max_words).
+    """Acessa URL e extrai corpo de texto limpo (até max_words).
 
-    Suporta:\n- NVD NIST: <p data-testid=\"vuln-description\">\n- marc.info/linux-cve-announce: <pre> com limpeza de cabeçalho\n- Qualquer site: <p>, <div>, <pre>, <blockquote> com texto > 30 chars"""
-    if not url or not url.startswith("http") or "ycombinator.com" in url or "reddit.com" in url:
+    Suporta:\n      marc.info/linux-cve-announce: <pre> com limpeza de cabeçalho\n      Qualquer site HTML estático: <p>, <div>, <pre>, <blockquote> > 30 chars"""
+    if not url or not url.startswith("http") or "nvd.nist.gov" in url or "ycombinator.com" in url or "reddit.com" in url:
         return ""
     try:
         headers = {"User-Agent": USER_AGENT}
@@ -26,13 +26,7 @@ def extract_body_snippet(url: str, max_words: int = 200, max_chars: int | None =
         for tag in soup(["script", "style", "nav", "header", "footer", "aside", "noscript", "form"]):
             tag.decompose()
 
-        # 1) NVD NIST: descrição vive em p[data-testid="vuln-description"]
-        nvd = soup.find("p", attrs={"data-testid": "vuln-description"})
-        if nvd:
-            raw = nvd.get_text(" ", strip=True)
-            return _truncate(raw, max_words, max_chars)
-
-        # 2) marc.info / mailing list: <pre> com cabeçalho From/Subject/Description
+        # 1) marc.info / mailing list: <pre> com cabeçalho From/Subject/Description
         texts = []
         for pre in soup.find_all("pre"):
             raw = pre.get_text(" ", strip=True)
