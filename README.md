@@ -26,7 +26,7 @@ O projeto é dividido em **dois processos** utilizando **SQLite** (modo WAL) com
 
 ### 1. Instalar as Dependências
 ```bash
-cd /srv/user/AI/projetos/Fofoqueira
+cd /srv/user/AI/projetos/Fofoqueiro
 pip install -r requirements.txt
 ```
 
@@ -92,7 +92,7 @@ THEME_KEYWORDS = []
 ## 📁 Estrutura
 
 ```
-Fofoqueira/
+Fofoqueiro/
 ├── app.py                 # Interface Streamlit
 ├── worker.py              # Daemon de coleta (background)
 ├── config.py              # Configurações centrais

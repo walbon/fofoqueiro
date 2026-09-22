@@ -74,15 +74,15 @@ else
 fi
 
 ###############################################################################
-# 5. Firewall (ufw) – porta 8501 só localhost
+# 5. Firewall (ufw) – porta 8000 só localhost
 ###############################################################################
 if command -v ufw >/dev/null 2>&1; then
     echo "🔒 Configurando firewall ufw..."
     sudo ufw default deny incoming || true
     sudo ufw default allow outgoing || true
-    sudo ufw allow from 127.0.0.1 to any port 8501 comment "Fofoqueiro Streamlit" || true
+    sudo ufw allow from 0.0.0.0 to any port 8000 comment "Fofoqueiro Streamlit" || true
     sudo ufw --force enable || true
-    echo "✅ Firewall: somente localhost acessa 8501."
+    echo "✅ Firewall: somente localhost acessa 8000."
 else
     echo "⚠️  ufw não encontrado. Opcional: sudo apt install ufw"
 fi
@@ -114,10 +114,11 @@ echo "🚀 Iniciando Fofoqueiro (Worker + Web) no tmux..."
 tmux new-session -d -s "\$SESSION_NAME" -n "worker" "cd '\$PROJECT_DIR' && '\$VENV_PYTHON' worker.py"
 
 # 2. Interface Web Streamlit (só localhost)
-tmux new-window -t "\$SESSION_NAME" -n "web" "cd '\$PROJECT_DIR' && '\$STREAMLIT_BIN' run app.py --server.address 127.0.0.1 --server.port 8501 --server.headless true"
+tmux new-window -t "\$SESSION_NAME" -n "web" "cd '\$PROJECT_DIR' && '\$STREAMLIT_BIN' run app.py --server.address 0.0.0.0 --server.port 8000 --server.headless true" # FIXED_BIND
+# OLD: tmux new-window -t "\$SESSION_NAME" -n "web" "cd '\$PROJECT_DIR' && '\$STREAMLIT_BIN' run app.py --server.address 127.0.0.1 --server.port 8000 --server.headless true"
 
 echo "✅ Fofoqueiro rodando em segundo plano no tmux (sessão '\$SESSION_NAME')!"
-echo "📱 Acesse a interface Web: http://localhost:8501"
+echo "📱 Acesse a interface Web: http://localhost:8000"
 echo "📜 Logs em tempo real: tail -f \$PROJECT_DIR/fofoqueiro.log"
 echo "🖥️  Conecte ao terminal tmux: tmux attach -t \$SESSION_NAME"
 EOF
@@ -135,7 +136,7 @@ echo ""
 echo "📂 Projeto: $PROJECT_DIR"
 echo "🐍 Python:  $VENV_PYTHON"
 echo "📡 Service: systemd → $SERVICE_NAME | tmux → $SESSION_NAME"
-echo "🔒 Firewall: porta 8501 somente localhost"
+echo "🔒 Firewall: porta 8000 somente localhost"
 echo ""
 echo "▶️ Iniciar daemon (coleta em background):"
 echo "   systemctl start $SERVICE_NAME    # se systemd"
@@ -144,7 +145,7 @@ echo "   $VENV_PYTHON $PROJECT_DIR/worker.py"
 echo ""
 echo "🌐 Interface web:"
 echo "   $PROJECT_DIR/start.sh            # worker + web via tmux"
-echo "   http://localhost:8501"
+echo "   http://localhost:8000"
 echo ""
 echo "📜 Logs: tail -f $PROJECT_DIR/fofoqueiro.log"
 echo "========================================="

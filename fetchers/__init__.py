@@ -225,7 +225,7 @@ class LWNFetcher(BaseFetcher):
             for entry in entries:
                 link = entry.link
                 results.append({
-                    "id": f"lwn_{entry.get('id', entry.link).split('/')[-1]}",
+                    "id": f"lwn_{(entry.get('id') or entry.link).strip('/').split('/')[-1]}",
                     "source": self.source_name,
                     "title": entry.title,
                     "link": link,

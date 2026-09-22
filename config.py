@@ -43,7 +43,7 @@ THEME_KEYWORDS = [
 ]
 
 # ── Scheduler ──────────────────────────────────────────────────────────
-WORKER_INTERVAL_MINUTES = 60  # a cada 1 hora
+WORKER_INTERVAL_MINUTES = 1440  # a cada 1 hora
 
 # ── Streamlit ──────────────────────────────────────────────────────────
 STREAMLIT_PAGE_TITLE = "Fofoqueiro – Agregador de Inteligência & Notícias"
