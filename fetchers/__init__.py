@@ -11,10 +11,9 @@ import re
 USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Fofoqueiro/1.0"
 
 def extract_body_snippet(url: str, max_words: int = 200, max_chars: int | None = None) -> str:
-    """Acessa a URL da notícia e extrai o corpo de texto limpo (até max_words).
+    """Acessa a URL e extrai o corpo de texto limpo (até max_words).
 
-    Usa max_words por padrão (200). Opcionalmente limita por max_chars
-    (mantido por compatibilidade com chamadas antigas)."""
+    Suporta:\n- NVD NIST: <p data-testid=\"vuln-description\">\n- marc.info/linux-cve-announce: <pre> com limpeza de cabeçalho\n- Qualquer site: <p>, <div>, <pre>, <blockquote> com texto > 30 chars"""
     if not url or not url.startswith("http") or "ycombinator.com" in url or "reddit.com" in url:
         return ""
     try:
@@ -23,23 +22,58 @@ def extract_body_snippet(url: str, max_words: int = 200, max_chars: int | None =
             resp = client.get(url)
             if resp.status_code != 200:
                 return ""
-            soup = BeautifulSoup(resp.text, "html.parser")
-            for tag in soup(["script", "style", "nav", "header", "footer", "aside", "noscript", "form"]):
-                tag.decompose()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        for tag in soup(["script", "style", "nav", "header", "footer", "aside", "noscript", "form"]):
+            tag.decompose()
 
-            paragraphs = [p.get_text(strip=True) for p in soup.find_all("p") if len(p.get_text(strip=True)) > 30]
-            full_text = " ".join(paragraphs)
-            if not full_text:
-                return ""
-            words = full_text.split()
-            if len(words) > max_words:
-                full_text = " ".join(words[:max_words]) + "..."
-            if max_chars is not None and len(full_text) > max_chars:
-                full_text = full_text[:max_chars].strip() + "..."
-            return full_text
+        # 1) NVD NIST: descrição vive em p[data-testid="vuln-description"]
+        nvd = soup.find("p", attrs={"data-testid": "vuln-description"})
+        if nvd:
+            raw = nvd.get_text(" ", strip=True)
+            return _truncate(raw, max_words, max_chars)
+
+        # 2) marc.info / mailing list: <pre> com cabeçalho From/Subject/Description
+        texts = []
+        for pre in soup.find_all("pre"):
+            raw = pre.get_text(" ", strip=True)
+            if len(raw) < 30:
+                continue
+            # Remove cabeçalho: tudo antes de "Description" seguido de "="+
+            m = re.search(r'Description\s*\n?={2,}\n(.*)', raw, re.DOTALL)
+            if m:
+                texts.append(m.group(1))
+                continue
+            # Sem cabeçalho Description → remove linhas From/Subject/Date/Message-ID/List
+            lines = raw.splitlines()
+            clean_lines = [l for l in lines
+                           if not re.match(r'^(From:|Subject:|Date:|Message-ID:|List:|To:|\[prev|\[next|\[Download)', l.strip())]
+            cleaned = " ".join(clean_lines).strip()
+            if len(cleaned) > 30:
+                texts.append(cleaned)
+
+        # 3) Fallback genérico: p, div, blockquote, pre
+        if not texts:
+            blocks = soup.find_all(["p", "div", "pre", "blockquote"])
+            texts = [b.get_text(" ", strip=True) for b in blocks
+                     if len(b.get_text(" ", strip=True)) > 30]
+
+        full_text = " ".join(texts)
+        return _truncate(full_text, max_words, max_chars)
     except Exception:
         pass
     return ""
+
+
+def _truncate(text: str, max_words: int, max_chars: int | None) -> str:
+    """Trunca texto em max_words (e opcionalmente max_chars)."""
+    if not text:
+        return ""
+    words = text.split()
+    if len(words) > max_words:
+        text = " ".join(words[:max_words]) + "..."
+    if max_chars is not None and len(text) > max_chars:
+        text = text[:max_chars].strip() + "..."
+    return text
 
 class BaseFetcher:
     source_name = "unknown"
