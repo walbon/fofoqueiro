@@ -45,6 +45,9 @@ THEME_KEYWORDS = [
 # ── Scheduler ──────────────────────────────────────────────────────────
 WORKER_INTERVAL_MINUTES = 1440  # a cada 1 hora
 
+# ── Phoronix ───────────────────────────────────────────────────────────
+PHRONIX_RSS_URL = "https://www.phoronix.com/rss.php"
+
 # ── Streamlit ──────────────────────────────────────────────────────────
 STREAMLIT_PAGE_TITLE = "Fofoqueiro – Agregador de Notícias Devlicínhas"
 STREAMLIT_PAGE_ICON  = "📰"

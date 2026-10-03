@@ -12,6 +12,7 @@ import config
 import database
 from ai_service import summarize
 from fetchers import HNFetcher, CVEFetcher, LWNFetcher, LinuxCVEAnnounceFetcher, UbuntuLWNFetcher
+from fetchers.phoronix_fetcher import PhoronixFetcher
 
 LOG_FILE = f"{config.PROJECT_ROOT}/fofoqueiro.log"
 LOCK_FILE = f"{config.PROJECT_ROOT}/worker.lock"
@@ -94,7 +95,8 @@ def run_fetchers():
         CVEFetcher(config.CVE_FEEDS, theme_keywords=config.THEME_KEYWORDS),
         LWNFetcher(rss_url=config.LWN_RSS_URL, limit=50),
         LinuxCVEAnnounceFetcher(theme_keywords=config.THEME_KEYWORDS),
-        UbuntuLWNFetcher(limit=50)
+        UbuntuLWNFetcher(limit=50),
+        PhoronixFetcher(rss_url=config.PHRONIX_RSS_URL, limit=30)
     ]
 
     # Parallelize fetchers execution

@@ -21,7 +21,8 @@ echo "🚀 Iniciando Fofoqueiro (Worker + Web) no tmux..."
 tmux new-session -d -s "$SESSION_NAME" -n "worker" "cd '$PROJECT_DIR' && '$VENV_PYTHON' worker.py"
 
 # 2. Interface Web Streamlit (só localhost)
-tmux new-window -t "$SESSION_NAME" -n "web" "cd '$PROJECT_DIR' && '$STREAMLIT_BIN' run app.py --server.address 0.0.0.0 --server.port 8000 --server.headless true"
+tmux new-window -t "$SESSION_NAME" -n "web" "cd '$PROJECT_DIR' && '$STREAMLIT_BIN' run app.py --server.address 0.0.0.0 --server.port 8000 --server.headless true" # FIXED_BIND
+# OLD: tmux new-window -t "$SESSION_NAME" -n "web" "cd '$PROJECT_DIR' && '$STREAMLIT_BIN' run app.py --server.address 127.0.0.1 --server.port 8000 --server.headless true"
 
 echo "✅ Fofoqueiro rodando em segundo plano no tmux (sessão '$SESSION_NAME')!"
 echo "📱 Acesse a interface Web: http://localhost:8000"
